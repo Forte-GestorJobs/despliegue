@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: micro-cloud-eventos
+spec:
+  type: LoadBalancer
+  selector:
+    app: mce
+  ports:
+  - protocol: TCP
+    port: 30810
+    targetPort: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-mce
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mce
+  template:
+    metadata:
+      labels:
+        app: mce
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login-secret
+      containers:
+      - name: gestor-jobs-container
+        image: ghcr.io/forte-gestorjobs/micro-cloud-eventos
+        ports:
+        - containerPort: 8083
+        env:
+            - name: MCE_DBUSER
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: MCE_DBUSER
+            - name: MCE_DBPWD
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: MCE_DBPWD
+            - name: MCE_DBNAME
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: MCE_DBNAME
+            - name: MCE_DBHOST
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: MCE_DBHOST
+            - name: MCE_DBPORT
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: MCE_DBPORT

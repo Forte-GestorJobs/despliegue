@@ -1,0 +1,122 @@
+# SERVICE FOR BBDD USERSDB
+apiVersion: v1
+kind: Service
+metadata:
+  name: bbdd-postgres-usersdb
+spec:
+  selector:
+    app: bbdd-user
+  ports:
+  - port: 5432
+    targetPort: 5432
+---
+# DEPLOY FOR BBDD USERSDB
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-bbdd-user
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: bbdd-user
+  template:
+    metadata:
+      labels:
+        app: bbdd-user
+    spec:
+      volumes:
+        - name: gestor-jobs-user-volume
+          persistentVolumeClaim:
+            claimName: gestor-jobs-user-pvc
+      containers:
+        - name: postgres-container
+          image: postgres:latest
+          resources:
+            limits:
+              memory: "50Mi"
+              cpu: "5m"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: gestor-jobs-user-volume
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: POSTGRES_DB_USERSDB
+---
+# SERVICE FOR BBDD TASKSDB  
+apiVersion: v1
+kind: Service
+metadata:
+  name: bbdd-postgres-taskdb
+spec:
+  selector:
+    app: bbdd-task
+  ports:
+  - port: 5433
+    targetPort: 5432
+---
+# DEPLOY FOR BBDD TASKSDB
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-bbdd-task
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: bbdd-task
+  template:
+    metadata:
+      labels:
+        app: bbdd-task
+    spec:
+      volumes:
+        - name: gestor-jobs-taskdb-volume
+          persistentVolumeClaim:
+            claimName: gestor-jobs-task-pvc
+      containers:
+        - name: postgres-container
+          image: postgres:latest
+          resources:
+            limits:
+              memory: "50Mi"
+              cpu: "5m"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: gestor-jobs-taskdb-volume
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: POSTGRES_DB_TASKDB
+

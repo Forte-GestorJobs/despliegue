@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: micro-sistema-apoyo
+spec:
+  type: LoadBalancer
+  selector:
+    app: msa
+  ports:
+  - protocol: TCP
+    port: 30811
+    targetPort: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-msa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: msa
+  template:
+    metadata:
+      labels:
+        app: msa
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login-secret
+      containers:
+      - name: gestor-jobs-container
+        image: micro-sistema-apoyo:latest
+        imagePullPolicy: Never
+        resources:
+          limits:
+            nvidia.com/gpu: 1

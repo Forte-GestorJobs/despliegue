@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: micro-gestion-usuarios
+spec:
+  type: LoadBalancer
+  selector:
+    app: mgu
+  ports:
+  - protocol: TCP
+    port: 30808
+    targetPort: 443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-mgu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mgu
+  template:
+    metadata:
+      labels:
+        app: mgu
+    spec:
+      imagePullSecrets:
+        - name: ghcr-login-secret
+      containers:
+      - name: gestor-jobs-container
+        image: ghcr.io/forte-gestorjobs/micro-gestion-usuarios
+        ports:
+        - containerPort: 8081
+        env:
+            - name: MGU_DBUSER
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: MGU_DBUSER
+            - name: MGU_DBPWD
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: MGU_DBPWD
+            - name: MGU_DBNAME
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: MGU_DBNAME
+            - name: MGU_DBHOST
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: MGU_DBHOST
+            - name: MGU_DBPORT
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: MGU_DBPORT
+---

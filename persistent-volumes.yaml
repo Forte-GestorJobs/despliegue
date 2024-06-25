@@ -1,0 +1,73 @@
+## STORAGECLASS
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-path
+provisioner: rancher.io/local-path
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete
+---
+## PERSISTENT VOLUME FOR USERSDB
+apiVersion: v1 
+kind: PersistentVolume
+metadata:
+  name: gestor-jobs-user-pv
+  labels:
+    app: gestor-jobs-user
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  hostPath:
+    path: "/data/gestor-jobs-user/"
+---
+## PERSISTENT VOLUME CLAIM FOR USERSDB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gestor-jobs-user-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-path
+---
+## PERSISTENT VOLUME FOR TASKSDB
+apiVersion: v1 
+kind: PersistentVolume
+metadata:
+  name: gestor-jobs-task-pv
+  labels:
+    app: gestor-jobs-task
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
+  hostPath:
+    path: "/data/gestor-jobs-task/"
+---
+## PERSISTENT VOLUME CLAIM FOR TASKSDB
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gestor-jobs-task-pvc
+spec:
+  selector:
+    matchLabels:
+      app: gestor-jobs-task
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-path
